@@ -11,7 +11,6 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-dataset', default='imdb', choices=['imdb'])
 parser.add_argument('-seed', default=0, type=int)
 parser.add_argument('-max_seq_length', default=512, type=int)
 parser.add_argument('-batch_size', default=24, type=int)

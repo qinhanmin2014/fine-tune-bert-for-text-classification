@@ -1,6 +1,9 @@
 # fine-tune-bert-for-text-classification
 Code to reproduce the paper "How to Fine-Tune BERT for Text Classification"
 
+- original paper: https://arxiv.org/abs/1905.05583
+- original repo: https://github.com/xuyige/BERT4doc-Classification
+
 ### baseline
 
 #### imdb dataset
