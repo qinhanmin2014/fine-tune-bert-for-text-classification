@@ -20,6 +20,7 @@ parser.add_argument('-max_grad_norm', default=1.0, type=float)
 parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
 parser.add_argument('-bert_path', default='bert-base-uncased')
+parser.add_argument('-trunc_mode', default='head', type=str)
 args = parser.parse_args()
 
 
@@ -40,7 +41,21 @@ def load_data(path):
     line = input_file.readline()
     while line:
         label, text = line.split("\t")
-        indices.append(tokenizer.encode(text, max_length=args.max_seq_length, padding="max_length", truncation=True))
+        text = tokenizer.tokenize(text)
+        if args.trunc_mode == "head":
+            if len(text) > args.max_seq_length - 2:
+                text = text[:args.max_seq_length - 2]
+        elif args.trunc_mode == "tail":
+            if len(text) > args.max_seq_length - 2:
+                text = text[-(args.max_seq_length - 2):]
+        else:
+            args.trunc_mode = int(args.trunc_mode)
+            assert args.trunc_mode < args.max_seq_length
+            if len(text) > args.max_seq_length - 2:
+                text = text[:args.trunc_mode] + text[-(args.max_seq_length - 2 - args.trunc_mode):]
+        text = ["[CLS]"] + text + ["[SEP]"]
+        text = text + ["[SEP]"] * (args.max_seq_length - len(text))
+        indices.append(tokenizer.convert_tokens_to_ids(text))
         sentiments.append(int(label))
         line = input_file.readline()
     input_file.close()
