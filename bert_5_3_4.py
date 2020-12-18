@@ -16,10 +16,12 @@ parser.add_argument('-max_seq_length', default=512, type=int)
 parser.add_argument('-batch_size', default=24, type=int)
 parser.add_argument('-num_epochs', default=4, type=int)
 parser.add_argument('-learning_rate', default=2e-5, type=float)
+parser.add_argument('-learning_rate_decay', default=0.95, type=float)
 parser.add_argument('-max_grad_norm', default=1.0, type=float)
 parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
 parser.add_argument('-bert_path', default='bert-base-uncased')
+parser.add_argument('-trunc_mode', default='head', type=str)
 args = parser.parse_args()
 
 
@@ -42,8 +44,17 @@ def load_data(path):
     while line:
         label, text = line.split("\t")
         text = tokenizer.tokenize(text)
-        if len(text) > args.max_seq_length - 2:
-            text = text[:args.max_seq_length - 2]
+        if args.trunc_mode == "head":
+            if len(text) > args.max_seq_length - 2:
+                text = text[:args.max_seq_length - 2]
+        elif args.trunc_mode == "tail":
+            if len(text) > args.max_seq_length - 2:
+                text = text[-(args.max_seq_length - 2):]
+        else:
+            args.trunc_mode = int(args.trunc_mode)
+            assert args.trunc_mode < args.max_seq_length
+            if len(text) > args.max_seq_length - 2:
+                text = text[:args.trunc_mode] + text[-(args.max_seq_length - 2 - args.trunc_mode):]
         text = ["[CLS]"] + text + ["[SEP]"]
         attention_mask.append([1] * len(text) + [0] * (args.max_seq_length - len(text)))
         token_type_ids.append([0] * args.max_seq_length)
@@ -76,11 +87,25 @@ test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=False)
 
 param_optimizer = list(model.named_parameters())
 no_decay = ['bias', 'LayerNorm.weight']
+group_all = ['layer.0.', 'layer.1.', 'layer.2.', 'layer.3.',
+           'layer.4.', 'layer.5.', 'layer.6.', 'layer.7.',
+           'layer.8.', 'layer.9.', 'layer.10.', 'layer.11.']
 optimizer_grouped_parameters = [
-    {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
-    {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-    ]
-optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, correct_bias=False)
+    {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)],
+     'weight_decay_rate': 0.01},
+    {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)],
+     'weight_decay_rate': 0.0},
+]
+for i, group in enumerate(group_all[::-1]):
+    optimizer_grouped_parameters.append(
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay) and group in n],
+         'weight_decay_rate': 0.01,
+         'lr': args.learning_rate * (args.learning_rate_decay ** i)})
+    optimizer_grouped_parameters.append(
+        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and group in n],
+         'weight_decay_rate': 0.0,
+         'lr': args.learning_rate * (args.learning_rate_decay ** i)})
+optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=1e-8)
 scheduler = get_linear_schedule_with_warmup(
                 optimizer, num_warmup_steps=len(train_loader) * args.num_epochs * args.warm_up_proportion,
                 num_training_steps=len(train_loader) * args.num_epochs)

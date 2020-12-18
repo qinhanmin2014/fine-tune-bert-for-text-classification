@@ -36,7 +36,8 @@ model.to(device);
 
 
 def load_data(path):
-    indices, sentiments = [], []
+    input_ids, attention_mask, token_type_ids = [], [], []
+    sentiments = []
     input_file = open(path, encoding="utf8")
     line = input_file.readline()
     while line:
@@ -54,27 +55,32 @@ def load_data(path):
             if len(text) > args.max_seq_length - 2:
                 text = text[:args.trunc_mode] + text[-(args.max_seq_length - 2 - args.trunc_mode):]
         text = ["[CLS]"] + text + ["[SEP]"]
-        text = text + ["[SEP]"] * (args.max_seq_length - len(text))
-        indices.append(tokenizer.convert_tokens_to_ids(text))
+        attention_mask.append([1] * len(text) + [0] * (args.max_seq_length - len(text)))
+        token_type_ids.append([0] * args.max_seq_length)
+        input_ids.append(tokenizer.convert_tokens_to_ids(text) + [0] * (args.max_seq_length - len(text)))
         sentiments.append(int(label))
         line = input_file.readline()
     input_file.close()
-    return np.array(indices), np.array(sentiments)
+    return np.array(input_ids), np.array(attention_mask), np.array(token_type_ids), np.array(sentiments)
 
 
 train_path = os.path.join("data/imdb", 'train.csv')
 test_path = os.path.join("data/imdb", 'test.csv')
-X_train, y_train = load_data(train_path)
-X_test, y_test = load_data(test_path)
+train_input_ids, train_attention_mask, train_token_type_ids, y_train = load_data(train_path)
+test_input_ids, test_attention_mask, test_token_type_ids, y_test = load_data(test_path)
 
 
-X_train = torch.tensor(X_train, dtype=torch.long)
+train_input_ids = torch.tensor(train_input_ids, dtype=torch.long)
+train_attention_mask = torch.tensor(train_attention_mask, dtype=torch.float)
+train_token_type_ids = torch.tensor(train_token_type_ids, dtype=torch.long)
 y_train = torch.tensor(y_train, dtype=torch.long)
-X_test = torch.tensor(X_test, dtype=torch.long)
+test_input_ids = torch.tensor(test_input_ids, dtype=torch.long)
+test_attention_mask = torch.tensor(test_attention_mask, dtype=torch.float)
+test_token_type_ids = torch.tensor(test_token_type_ids, dtype=torch.long)
 y_test = torch.tensor(y_test, dtype=torch.long)
-train_data = TensorDataset(X_train, y_train)
+train_data = TensorDataset(train_input_ids, train_attention_mask, train_token_type_ids, y_train)
 train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
-test_data = TensorDataset(X_test, y_test)
+test_data = TensorDataset(test_input_ids, test_attention_mask, test_token_type_ids, y_test)
 test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=False)
 
 
@@ -84,7 +90,7 @@ optimizer_grouped_parameters = [
     {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
     {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=1e-8)
+optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, correct_bias=False)
 scheduler = get_linear_schedule_with_warmup(
                 optimizer, num_warmup_steps=len(train_loader) * args.num_epochs * args.warm_up_proportion,
                 num_training_steps=len(train_loader) * args.num_epochs)
@@ -92,11 +98,13 @@ total_step = len(train_loader)
 for epoch in range(args.num_epochs):
     model.train()
     model.zero_grad()
-    for i, (cur_X_train, cur_y_train) in enumerate(train_loader):
-        cur_X_train = cur_X_train.to(device)
-        cur_y_train = cur_y_train.to(device)
-        outputs = model(cur_X_train)
-        loss = nn.CrossEntropyLoss()(outputs[0], cur_y_train)
+    for i, (cur_input_ids, cur_attention_mask, cur_token_type_ids, cur_y) in enumerate(train_loader):
+        cur_input_ids = cur_input_ids.to(device)
+        cur_attention_mask = cur_attention_mask.to(device)
+        cur_token_type_ids = cur_token_type_ids.to(device)
+        cur_y = cur_y.to(device)
+        outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
+        loss = nn.CrossEntropyLoss()(outputs[0], cur_y)
         loss /= args.gradient_accumulation_step
         loss.backward()
         if (i + 1) % args.gradient_accumulation_step == 0:
@@ -111,11 +119,13 @@ for epoch in range(args.num_epochs):
     with torch.no_grad():
         correct = 0
         total = 0
-        for cur_X_test, cur_y_test in tqdm(test_loader):
-            cur_X_test = cur_X_test.to(device)
-            cur_y_test = cur_y_test.to(device)
-            outputs = model(cur_X_test)
+        for cur_input_ids, cur_attention_mask, cur_token_type_ids, cur_y in tqdm(test_loader):
+            cur_input_ids = cur_input_ids.to(device)
+            cur_attention_mask = cur_attention_mask.to(device)
+            cur_token_type_ids = cur_token_type_ids.to(device)
+            cur_y = cur_y.to(device)
+            outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
             _, predicted = torch.max(outputs[0], 1)
-            total += cur_y_test.size(0)
-            correct += (predicted == cur_y_test).sum().item()
+            total += cur_y.size(0)
+            correct += (predicted == cur_y).sum().item()
         print('Accuracy: {} %'.format(100 * correct / total))
