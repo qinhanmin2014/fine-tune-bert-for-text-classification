@@ -21,7 +21,7 @@ parser.add_argument('-max_grad_norm', default=1.0, type=float)
 parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
 parser.add_argument('-bert_path', default='bert-base-uncased')
-parser.add_argument('-trunc_mode', default='head', type=str)
+parser.add_argument('-trunc_mode', default=128, type=str)
 args = parser.parse_args()
 
 
@@ -105,7 +105,7 @@ for i, group in enumerate(group_all[::-1]):
         {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and group in n],
          'weight_decay_rate': 0.0,
          'lr': args.learning_rate * (args.learning_rate_decay ** i)})
-optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=1e-8)
+optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, correct_bias=False)
 scheduler = get_linear_schedule_with_warmup(
                 optimizer, num_warmup_steps=len(train_loader) * args.num_epochs * args.warm_up_proportion,
                 num_training_steps=len(train_loader) * args.num_epochs)

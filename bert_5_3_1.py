@@ -20,7 +20,7 @@ parser.add_argument('-max_grad_norm', default=1.0, type=float)
 parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
 parser.add_argument('-bert_path', default='bert-base-uncased')
-parser.add_argument('-trunc_mode', default='head', type=str)
+parser.add_argument('-trunc_mode', default=128, type=str)
 args = parser.parse_args()
 
 
