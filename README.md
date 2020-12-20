@@ -50,7 +50,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mod
     - reproduced result (average over 3 seeds)
       - best test: 94.01% (0.04%)
       - last test: 93.96% (0.09%)
-- Conclusion: head + tail is usually the best way.
+- **Conclusion: head + tail is usually the best way.**
 
 ### extra experiment: influence of max lengths (imdb dataset)
 
@@ -74,4 +74,20 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_baseline.py -max_seq_length XXX
   - exceeding ratio: training set 13.28%, test set 12.34%
   - best test: 94.20% (0.08%)
   - last test: 94.19% (0.08%)
-- Conclusion: When some texts exceed max_seq_length, larger max_seq_length is usually better.
+- **Conclusion: When some texts exceed max_seq_length, larger max_seq_length is usually better.**
+
+### extra experiment: influence of gradient accumulation (imdb dataset)
+
+```
+CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py
+CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
+```
+
+- baseline (without gradient accumulation, average over 3 seeds)
+  - reported result (best test): 94.58% (error rate 5.42%)
+  - best test: 94.57% (0.07%)
+  - last test: 94.49% (0.04%)
+- gradient accumulation (average over 3 seeds)
+  - best test: 94.60% (0.08%)
+  - last test: 94.60% (0.08%)
+- **Conclusion: We can get similar results with less GPU memory through gradient accumulation**

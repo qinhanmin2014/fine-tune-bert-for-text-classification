@@ -107,8 +107,8 @@ for i, group in enumerate(group_all[::-1]):
          'lr': args.learning_rate * (args.learning_rate_decay ** i)})
 optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, correct_bias=False)
 scheduler = get_linear_schedule_with_warmup(
-                optimizer, num_warmup_steps=len(train_loader) * args.num_epochs * args.warm_up_proportion,
-                num_training_steps=len(train_loader) * args.num_epochs)
+                optimizer, num_warmup_steps=len(train_loader) * args.num_epochs * args.warm_up_proportion // args.gradient_accumulation_step,
+                num_training_steps=len(train_loader) * args.num_epochs // args.gradient_accumulation_step)
 total_step = len(train_loader)
 for epoch in range(args.num_epochs):
     model.train()
