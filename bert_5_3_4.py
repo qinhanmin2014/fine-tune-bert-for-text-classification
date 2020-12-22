@@ -92,18 +92,18 @@ group_all = ['layer.0.', 'layer.1.', 'layer.2.', 'layer.3.',
            'layer.8.', 'layer.9.', 'layer.10.', 'layer.11.']
 optimizer_grouped_parameters = [
     {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)],
-     'weight_decay_rate': 0.01},
+     'weight_decay': 0.01},
     {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and not any(nd in n for nd in group_all)],
-     'weight_decay_rate': 0.0},
+     'weight_decay': 0.0},
 ]
 for i, group in enumerate(group_all[::-1]):
     optimizer_grouped_parameters.append(
         {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay) and group in n],
-         'weight_decay_rate': 0.01,
+         'weight_decay': 0.01,
          'lr': args.learning_rate * (args.learning_rate_decay ** i)})
     optimizer_grouped_parameters.append(
         {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay) and group in n],
-         'weight_decay_rate': 0.0,
+         'weight_decay': 0.0,
          'lr': args.learning_rate * (args.learning_rate_decay ** i)})
 optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, correct_bias=False)
 scheduler = get_linear_schedule_with_warmup(

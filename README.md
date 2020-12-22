@@ -52,6 +52,41 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mod
       - last test: 93.96% (0.09%)
 - **Conclusion: head + tail is usually the best way.**
 
+### 5.3.4 Layer-wise Decreasing Layer Rate
+
+- baseline (learning rate 2.0e-5, head+tail, max_seq_length=512, average over 3 seeds)
+  - reported result (best test): 94.58% (error rate 5.42%)
+  - best test: 94.51% (0.08%)
+  - last test: 94.45% (0.06%)
+- learning rate 2.0e-5, decay factor 0.95 (average over 3 seeds)
+  - reported result (best test): 94.60% (error rate 5.40%)
+  - best test: 94.60% (0.07%)
+  - last test: 94.55% (0.01%)
+- learning rate 2.0e-5, decay factor 0.90 (average over 3 seeds)
+  - reported result (best test): 94.48% (error rate 5.52%)
+  - best test: 94.54% (0.06%)
+  - last test: 94.53% (0.06%)
+- learning rate 2.0e-5, decay factor 0.85 (average over 3 seeds)
+  - reported result (best test): 94.35% (error rate 5.65%)
+  - best test: 94.46% (0.12%)
+  - last test: 94.46% (0.12%)
+- learning rate 2.5e-5, decay factor 1.00 (average over 3 seeds)
+  - reported result (best test): 94.48% (error rate 5.52%)
+  - best test: X% (X%)
+  - last test: X% (X%)
+- learning rate 2.5e-5, decay factor 0.95 (average over 3 seeds)
+  - reported result (best test): 94.54% (error rate 5.46%)
+  - best test: X% (X%)
+  - last test: X% (X%)
+- learning rate 2.5e-5, decay factor 0.90 (average over 3 seeds)
+  - reported result (best test): 94.56% (error rate 5.44%)
+  - best test: X% (X%)
+  - last test: X% (X%)
+- learning rate 2.5e-5, decay factor 0.85 (average over 3 seeds)
+  - reported result (best test): 94.42% (error rate 5.58%)
+  - best test: X% (X%)
+  - last test: X% (X%)
+
 ### extra experiment: influence of max lengths (imdb dataset)
 
 ```
@@ -83,7 +118,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py
 CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
 ```
 
-- baseline (without gradient accumulation, average over 3 seeds)
+- baseline (head+tail, max_seq_length=512, average over 3 seeds)
   - reported result (best test): 94.58% (error rate 5.42%)
   - best test: 94.57% (0.07%)
   - last test: 94.49% (0.04%)
