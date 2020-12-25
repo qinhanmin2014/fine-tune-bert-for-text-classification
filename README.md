@@ -54,6 +54,28 @@ python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
     - last test: 93.96% (0.09%)
 - **Conclusion: head + tail is usually the best way.**
 
+### 5.3.3 Catastrophic Forgetting
+
+```
+python bert_5_3_1.py -learning_rate XXX
+```
+
+- head+tail, max_seq_length=512, learning_rate 2.0e-5 (average over 3 seeds)
+  - best test: 94.57% (0.07%)
+  - last test: 94.49% (0.04%)
+- head+tail, max_seq_length=512, learning_rate 5.0e-5 (average over 3 seeds)
+  - best test: 94.30% (0.12%)
+  - last test: 94.27% (0.13%) 
+- head+tail, max_seq_length=512, learning_rate 1.0e-4 (average over 3 seeds)
+  - best test: 91.95% (0.32%)
+  - last test: 91.95% (0.32%)
+  - loss won't decrease to a small value
+- head+tail, max_seq_length=512, learning_rate 4.0e-4 (average over 3 seeds)
+  - best test: 50.00% (0.00%)
+  - last test: 50.00% (0.00%)
+  - loss won't decrease
+- **Conclusion: A small learning rate is usually better.**
+
 ### 5.3.4 Layer-wise Decreasing Layer Rate
 
 ```
