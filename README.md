@@ -4,6 +4,8 @@ Code to reproduce the paper "How to Fine-Tune BERT for Text Classification"
 - original paper: https://arxiv.org/abs/1905.05583
 - original repo: https://github.com/xuyige/BERT4doc-Classification
 
+The imdb dataset used in the paper is preprocessed by the author (e.g., HTML tags are removed), and can be obtained from https://drive.google.com/drive/folders/1Rbi0tnvsQrsHvT_353pMdIbRwDlLhfwM.
+
 ### baseline (imdb dataset)
 
 ```
@@ -23,33 +25,33 @@ python bert_5_3_1.py -max_seq_length XXX -trunc_mode tail
 python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
 ```
 
-- head-only, max_seq_length=512 (average over 3 seeds)
-    - reported result (best test): 94.37% (error rate 5.63%)
-    - reproduced result (average over 3 seeds)
-      - best test: 94.20% (0.08%)
-      - last test: 94.19% (0.08%)
-- tail-only, max_seq_length=512 (average over 3 seeds)
-    - reported result (best test): 94.56% (error rate 5.44%)
-    - reproduced result (average over 3 seeds)
-      - best test: 94.48% (0.04%)
-      - last test: 94.47% (0.05%)
-- head+tail, max_seq_length=512 (average over 3 seeds)
-    - reported result (best test): 94.58% (error rate 5.42%)
-    - reproduced result (average over 3 seeds)
-      - best test: 94.57% (0.07%)
-      - last test: 94.49% (0.04%)
-- head-only, max_seq_length=256 (average over 3 seeds)
-    - reproduced result (average over 3 seeds)
-      - best test: 92.57% (0.06%)
-      - last test: 92.52% (0.06%)
-- tail-only, max_seq_length=256 (average over 3 seeds)
-    - reproduced result (average over 3 seeds)
-      - best test: 93.97% (0.03%)
-      - last test: 93.97% (0.03%)
-- head+tail, max_seq_length=256 (average over 3 seeds)
-    - reproduced result (average over 3 seeds)
-      - best test: 94.01% (0.04%)
-      - last test: 93.96% (0.09%)
+- head-only, max_seq_length=512
+  - reported result (best test): 94.37% (error rate 5.63%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.20% (0.08%)
+    - last test: 94.19% (0.08%)
+- tail-only, max_seq_length=512
+  - reported result (best test): 94.56% (error rate 5.44%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.48% (0.04%)
+    - last test: 94.47% (0.05%)
+- head+tail, max_seq_length=512
+  - reported result (best test): 94.58% (error rate 5.42%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.57% (0.07%)
+    - last test: 94.49% (0.04%)
+- head-only, max_seq_length=256
+  - reproduced result (average over 3 seeds)
+    - best test: 92.57% (0.06%)
+    - last test: 92.52% (0.06%)
+- tail-only, max_seq_length=256
+  - reproduced result (average over 3 seeds)
+    - best test: 93.97% (0.03%)
+    - last test: 93.97% (0.03%)
+- head+tail, max_seq_length=256
+  - reproduced result (average over 3 seeds)
+    - best test: 94.01% (0.04%)
+    - last test: 93.96% (0.09%)
 - **Conclusion: head + tail is usually the best way.**
 
 ### 5.3.4 Layer-wise Decreasing Layer Rate
@@ -58,38 +60,46 @@ python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
 python bert_5_3_4.py -learning_rate_decay XXX -learning_rate XXX
 ```
 
-- baseline (learning rate 2.0e-5, head+tail, max_seq_length=512, average over 3 seeds)
+- baseline (learning rate 2.0e-5, head+tail, max_seq_length=512)
   - reported result (best test): 94.58% (error rate 5.42%)
-  - best test: 94.51% (0.08%)
-  - last test: 94.45% (0.06%)
-- learning rate 2.0e-5, decay factor 0.95 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.51% (0.08%)
+    - last test: 94.45% (0.06%)
+- learning rate 2.0e-5, decay factor 0.95
   - reported result (best test): 94.60% (error rate 5.40%)
-  - best test: 94.60% (0.07%)
-  - last test: 94.55% (0.01%)
-- learning rate 2.0e-5, decay factor 0.90 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.60% (0.07%)
+    - last test: 94.55% (0.01%)
+- learning rate 2.0e-5, decay factor 0.90
   - reported result (best test): 94.48% (error rate 5.52%)
-  - best test: 94.54% (0.06%)
-  - last test: 94.53% (0.06%)
-- learning rate 2.0e-5, decay factor 0.85 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.54% (0.06%)
+    - last test: 94.53% (0.06%)
+- learning rate 2.0e-5, decay factor 0.85
   - reported result (best test): 94.35% (error rate 5.65%)
-  - best test: 94.46% (0.12%)
-  - last test: 94.46% (0.12%)
-- learning rate 2.5e-5, decay factor 1.00 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.46% (0.12%)
+    - last test: 94.46% (0.12%)
+- learning rate 2.5e-5, decay factor 1.00
   - reported result (best test): 94.48% (error rate 5.52%)
-  - best test: 94.54% (0.05%)
-  - last test: 94.53% (0.05%)
-- learning rate 2.5e-5, decay factor 0.95 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.54% (0.05%)
+    - last test: 94.53% (0.05%)
+- learning rate 2.5e-5, decay factor 0.95
   - reported result (best test): 94.54% (error rate 5.46%)
-  - best test: 94.64% (0.06%)
-  - last test: 94.59% (0.10%)
-- learning rate 2.5e-5, decay factor 0.90 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.64% (0.06%)
+    - last test: 94.59% (0.10%)
+- learning rate 2.5e-5, decay factor 0.90
   - reported result (best test): 94.56% (error rate 5.44%)
-  - best test: 94.50% (0.05%)
-  - last test: 94.50% (0.05%)
-- learning rate 2.5e-5, decay factor 0.85 (average over 3 seeds)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.50% (0.05%)
+    - last test: 94.50% (0.05%)
+- learning rate 2.5e-5, decay factor 0.85
   - reported result (best test): 94.42% (error rate 5.58%)
-  - best test: 94.46% (0.02%)
-  - last test: 94.46% (0.02%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.46% (0.02%)
+    - last test: 94.46% (0.02%)
 - **Conclusion: A small decay factor (e.g., 0.95) usually leads to better results.**
 
 ### extra experiment: influence of max lengths (imdb dataset)
@@ -124,10 +134,30 @@ python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
 ```
 
 - baseline (head+tail, max_seq_length=512, average over 3 seeds)
-  - reported result (best test): 94.58% (error rate 5.42%)
   - best test: 94.57% (0.07%)
   - last test: 94.49% (0.04%)
 - gradient accumulation (average over 3 seeds)
   - best test: 94.60% (0.08%)
   - last test: 94.60% (0.08%)
 - **Conclusion: We can get similar results with less GPU memory through gradient accumulation**
+
+### extra experiment: influence of data preprocessing (imdb dataset)
+
+```
+python bert_5_3_1.py
+python bert_data_preprocessing.py
+```
+
+- baseline (processed dataset used in the paper, head+tail, max_seq_length=512, average over 3 seeds)
+  - best test: 94.57% (0.07%)
+  - last test: 94.49% (0.04%)
+- original dataset (head+tail, max_seq_length=512, average over 3 seeds)
+  - best test: 94.51% (0.02%)
+  - last test: 94.47% (0.05%)
+- baseline (processed dataset used in the paper, head+tail, max_seq_length=256, average over 3 seeds)
+  - best test: 94.01% (0.04%)
+  - last test: 93.96% (0.09%)
+- original dataset (head+tail, max_seq_length=256, average over 3 seeds)
+  - best test: 94.12% (0.07%)
+  - last test: 94.03% (0.11%)
+- **Conclusion: Data preprocessing has little influence on the performance of bert**
