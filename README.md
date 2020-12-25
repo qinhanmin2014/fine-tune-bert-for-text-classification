@@ -7,7 +7,7 @@ Code to reproduce the paper "How to Fine-Tune BERT for Text Classification"
 ### baseline (imdb dataset)
 
 ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_baseline.py
+python bert_baseline.py
 ```
 
 - reported result (best test): 94.37% (error rate 5.63%)
@@ -18,9 +18,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_baseline.py
 ### 5.3.1 Dealing with long texts (imdb dataset)
 
 ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mode head
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mode tail
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
+python bert_5_3_1.py -max_seq_length XXX -trunc_mode head
+python bert_5_3_1.py -max_seq_length XXX -trunc_mode tail
+python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
 ```
 
 - head-only, max_seq_length=512 (average over 3 seeds)
@@ -54,6 +54,10 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mod
 
 ### 5.3.4 Layer-wise Decreasing Layer Rate
 
+```
+python bert_5_3_4.py -learning_rate_decay XXX -learning_rate XXX
+```
+
 - baseline (learning rate 2.0e-5, head+tail, max_seq_length=512, average over 3 seeds)
   - reported result (best test): 94.58% (error rate 5.42%)
   - best test: 94.51% (0.08%)
@@ -72,25 +76,26 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -max_seq_length XXX -trunc_mod
   - last test: 94.46% (0.12%)
 - learning rate 2.5e-5, decay factor 1.00 (average over 3 seeds)
   - reported result (best test): 94.48% (error rate 5.52%)
-  - best test: X% (X%)
-  - last test: X% (X%)
+  - best test: 94.54% (0.05%)
+  - last test: 94.53% (0.05%)
 - learning rate 2.5e-5, decay factor 0.95 (average over 3 seeds)
   - reported result (best test): 94.54% (error rate 5.46%)
-  - best test: X% (X%)
-  - last test: X% (X%)
+  - best test: 94.64% (0.06%)
+  - last test: 94.59% (0.10%)
 - learning rate 2.5e-5, decay factor 0.90 (average over 3 seeds)
   - reported result (best test): 94.56% (error rate 5.44%)
-  - best test: X% (X%)
-  - last test: X% (X%)
+  - best test: 94.50% (0.05%)
+  - last test: 94.50% (0.05%)
 - learning rate 2.5e-5, decay factor 0.85 (average over 3 seeds)
   - reported result (best test): 94.42% (error rate 5.58%)
-  - best test: X% (X%)
-  - last test: X% (X%)
+  - best test: 94.46% (0.02%)
+  - last test: 94.46% (0.02%)
+- **Conclusion: A small decay factor (e.g., 0.95) usually leads to better results.**
 
 ### extra experiment: influence of max lengths (imdb dataset)
 
 ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_baseline.py -max_seq_length XXX
+python bert_baseline.py -max_seq_length XXX
 ```
 
 - basic info
@@ -114,8 +119,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_baseline.py -max_seq_length XXX
 ### extra experiment: influence of gradient accumulation (imdb dataset)
 
 ```
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py
-CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
+python bert_5_3_1.py
+python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
 ```
 
 - baseline (head+tail, max_seq_length=512, average over 3 seeds)
