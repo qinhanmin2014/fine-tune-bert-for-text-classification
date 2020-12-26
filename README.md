@@ -148,6 +148,30 @@ python bert_baseline.py -max_seq_length XXX
   - last test: 94.19% (0.08%)
 - **Conclusion: When some texts exceed max_seq_length, larger max_seq_length is usually better.**
 
+### extra experiment: pool the output states instead of taking the first output state (imdb dataset)
+
+```
+python bert_pool_last_layer.py -pool_mode mean -num_pool_layers XXX
+python bert_pool_last_layer.py -pool_mode max -num_pool_layers XXX
+```
+
+- baseline (head+tail, max_seq_length=512, average over 3 seeds)
+  - best test: 94.57% (0.07%)
+  - last test: 94.49% (0.04%)
+- average pooling, last layer
+  - best test: 94.47% (0.11%)
+  - last test: 94.44% (0.14%)
+- average pooling, concat last 3 layers
+  - best test: 94.48% (0.06%)
+  - last test: 94.47% (0.07%)
+- max pooling, last layer
+  - best test: 94.43% (0.12%)
+  - last test: 94.41% (0.10%)
+- max pooling, concat last 3 layers
+  - best test: 94.45% (0.08%)
+  - last test: 94.41% (0.13%)
+- **Conclusion: Pooling the output states won't lead to better results on imdb dataset.**
+
 ### extra experiment: influence of gradient accumulation (imdb dataset)
 
 ```
