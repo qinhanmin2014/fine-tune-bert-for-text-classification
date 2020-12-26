@@ -161,7 +161,7 @@ python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
 - gradient accumulation (average over 3 seeds)
   - best test: 94.60% (0.08%)
   - last test: 94.60% (0.08%)
-- **Conclusion: We can get similar results with less GPU memory through gradient accumulation**
+- **Conclusion: We can get similar results with less GPU memory through gradient accumulation.**
 
 ### extra experiment: influence of data preprocessing (imdb dataset)
 
@@ -182,4 +182,26 @@ python bert_data_preprocessing.py
 - original dataset (head+tail, max_seq_length=256, average over 3 seeds)
   - best test: 94.12% (0.07%)
   - last test: 94.03% (0.11%)
-- **Conclusion: Data preprocessing has little influence on the performance of bert**
+- **Conclusion: Data preprocessing has little influence on the performance of bert.**
+
+### extra experiment: tensorflow instead of pytorch
+
+```
+tf_bert_5_3_1_kaggle_tpu.ipynb (use tpu provided by kaggle)
+```
+
+- baseline
+  - pytorch result (average over 3 seeds)
+    - best test: 94.20% (0.08%)
+    - last test: 94.19% (0.08%)
+  - tensorflow resule (average over 3 runs)
+    - best test: 94.24% (0.08%)
+    - last test: 94.17% (0.10%)
+- head+tail, max_seq_length=512
+  - pytorch result (average over 3 seeds)
+    - best test: 94.57% (0.07%)
+    - last test: 94.49% (0.04%)
+  - tensorflow resule (average over 3 runs)
+    - best test: 94.51% (0.06%)
+    - last test: 94.44% (0.13%)
+- **Conclusion: We can get similar results using tensorflow.**
