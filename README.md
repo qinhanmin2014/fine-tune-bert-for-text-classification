@@ -54,6 +54,35 @@ python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
     - last test: 93.96% (0.09%)
 - **Conclusion: head + tail is usually the best way.**
 
+### 5.3.2 Features from Different layers
+
+```
+python bert_5_3_2.py -pool_mode concat
+python bert_5_3_2.py -pool_mode mean
+python bert_5_3_2.py -pool_mode max
+```
+- baseline (head+tail, max_seq_length=512)
+  - reported result (best test): 94.58% (error rate 5.42%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.57% (0.07%)
+    - last test: 94.49% (0.04%)
+- Last 4 Layers + concat
+  - reported result (best test): 94.57% (error rate 5.43%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.50% (0.03%)
+    - last test: 94.50% (0.03%)
+- Last 4 Layers + mean
+  - reported result (best test): 94.56% (error rate 5.44%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.42% (0.07%)
+    - last test: 94.39% (0.03%)
+- Last 4 Layers + max
+  - reported result (best test): 94.58% (error rate 5.42%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.53% (0.08%)
+    - last test: 94.50% (0.07%)
+- **Conclusion: Pooling the first output state of the last several layers won't lead to better results on imdb dataset.**
+
 ### 5.3.3 Catastrophic Forgetting
 
 ```
@@ -175,7 +204,6 @@ python bert_pool_last_layer.py -pool_mode max -num_pool_layers XXX
 ### extra experiment: influence of gradient accumulation (imdb dataset)
 
 ```
-python bert_5_3_1.py
 python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
 ```
 
@@ -190,7 +218,6 @@ python bert_5_3_1.py -batch_size 12 -gradient_accumulation_step 2
 ### extra experiment: influence of data preprocessing (imdb dataset)
 
 ```
-python bert_5_3_1.py
 python bert_data_preprocessing.py
 ```
 

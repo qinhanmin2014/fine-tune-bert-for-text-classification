@@ -6,7 +6,7 @@ import random
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
-from transformers import BertTokenizer, BertPreTrainedModel, BertModel, AdamW, get_linear_schedule_with_warmup
+from transformers import BertTokenizer, BertForSequenceClassification, AdamW, get_linear_schedule_with_warmup
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -21,8 +21,6 @@ parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
 parser.add_argument('-bert_path', default='bert-base-uncased')
 parser.add_argument('-trunc_mode', default=128, type=str)
-parser.add_argument('-num_pool_layers', default=4, type=int)
-parser.add_argument('-pool_mode', default="concat", type=str)
 args = parser.parse_args()
 
 
@@ -30,67 +28,8 @@ random.seed(args.seed)
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 
-class BertForSequenceClassification(BertPreTrainedModel):
-    def __init__(self, config):
-        super().__init__(config)
-        self.num_labels = config.num_labels
-        self.bert = BertModel(config)
-        self.dropout = nn.Dropout(config.hidden_dropout_prob)
-        if args.pool_mode == "concat":
-            self.classifier = nn.Linear(config.hidden_size * args.num_pool_layers, config.num_labels)
-        else:
-            self.classifier = nn.Linear(config.hidden_size, config.num_labels)
-        self.init_weights()
 
-    def forward(
-        self,
-        input_ids=None,
-        attention_mask=None,
-        token_type_ids=None,
-        position_ids=None,
-        head_mask=None,
-        inputs_embeds=None,
-        output_attentions=None,
-        output_hidden_states=None,
-        return_dict=None,
-    ):
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
-        outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-            position_ids=position_ids,
-            head_mask=head_mask,
-            inputs_embeds=inputs_embeds,
-            output_attentions=output_attentions,
-            output_hidden_states=True,
-            return_dict=return_dict,
-        )
-
-        if args.pool_mode == "concat":
-            selected_outputs = []
-            for i in range(-args.num_pool_layers, 0):
-                selected_outputs.append(outputs[2][i][:, 0, :])
-            pooled_output = torch.cat(selected_outputs, dim=1)
-        elif args.pool_mode == "mean":
-            selected_outputs = []
-            for i in range(-args.num_pool_layers, 0):
-                selected_outputs.append(outputs[2][i][:, 0, :].unsqueeze(1))
-            selected_outputs = torch.cat(selected_outputs, dim=1)
-            pooled_output = torch.mean(selected_outputs, dim=1)
-        elif args.pool_mode == "max":
-            selected_outputs = []
-            for i in range(-args.num_pool_layers, 0):
-                selected_outputs.append(outputs[2][i][:, 0, :].unsqueeze(1))
-            selected_outputs = torch.cat(selected_outputs, dim=1)
-            pooled_output, _ = torch.max(selected_outputs, dim=1)
-        
-        pooled_output = self.dropout(pooled_output)
-        logits = self.classifier(pooled_output)
-        return logits
-
-
+tokenizer = BertTokenizer.from_pretrained(args.bert_path)
 model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
 model = torch.nn.DataParallel(model)
 model.to(device);
@@ -115,17 +54,22 @@ def load_data(path):
             assert args.trunc_mode < args.max_seq_length
             if len(text) > args.max_seq_length - 2:
                 text = text[:args.trunc_mode] + text[-(args.max_seq_length - 2 - args.trunc_mode):]
-        text = ["[CLS]"] + text + ["[SEP]"]
+        if args.bert_path == "bert-base-uncased":
+            text = ["[CLS]"] + text + ["[SEP]"]
+        elif args.bert_path == "roberta-base":
+            text = ["<s>"] + text + ["</s>"]
         attention_mask.append([1] * len(text) + [0] * (args.max_seq_length - len(text)))
         token_type_ids.append([0] * args.max_seq_length)
-        input_ids.append(tokenizer.convert_tokens_to_ids(text) + [0] * (args.max_seq_length - len(text)))
+        if args.bert_path == "bert-base-uncased":
+            input_ids.append(tokenizer.convert_tokens_to_ids(text) + [0] * (args.max_seq_length - len(text)))
+        elif args.bert_path == "roberta-base":
+            input_ids.append(tokenizer.convert_tokens_to_ids(text) + [1] * (args.max_seq_length - len(text)))
         sentiments.append(int(label))
         line = input_file.readline()
     input_file.close()
     return np.array(input_ids), np.array(attention_mask), np.array(token_type_ids), np.array(sentiments)
 
 
-tokenizer = BertTokenizer.from_pretrained(args.bert_path)
 train_path = os.path.join("data/imdb", 'train.csv')
 test_path = os.path.join("data/imdb", 'test.csv')
 train_input_ids, train_attention_mask, train_token_type_ids, y_train = load_data(train_path)
@@ -165,8 +109,11 @@ for epoch in range(args.num_epochs):
         cur_attention_mask = cur_attention_mask.to(device)
         cur_token_type_ids = cur_token_type_ids.to(device)
         cur_y = cur_y.to(device)
-        outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
-        loss = nn.CrossEntropyLoss()(outputs, cur_y)
+        if args.bert_path == "bert-base-uncased":
+            outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
+        elif args.bert_path == "roberta-base":
+            outputs = model(cur_input_ids, cur_attention_mask)
+        loss = nn.CrossEntropyLoss()(outputs[0], cur_y)
         loss /= args.gradient_accumulation_step
         loss.backward()
         if (i + 1) % args.gradient_accumulation_step == 0:
@@ -186,8 +133,11 @@ for epoch in range(args.num_epochs):
             cur_attention_mask = cur_attention_mask.to(device)
             cur_token_type_ids = cur_token_type_ids.to(device)
             cur_y = cur_y.to(device)
-            outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
-            _, predicted = torch.max(outputs, 1)
+            if args.bert_path == "bert-base-uncased":
+                outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
+            elif args.bert_path == "roberta-base":
+                outputs = model(cur_input_ids, cur_attention_mask)
+            _, predicted = torch.max(outputs[0], 1)
             total += cur_y.size(0)
             correct += (predicted == cur_y).sum().item()
         print('Accuracy: {} %'.format(100 * correct / total))
