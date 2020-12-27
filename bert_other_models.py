@@ -6,7 +6,9 @@ import random
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
-from transformers import BertTokenizer, BertForSequenceClassification, AdamW, get_linear_schedule_with_warmup
+from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from transformers import AdamW, get_linear_schedule_with_warmup
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -19,7 +21,7 @@ parser.add_argument('-learning_rate', default=2e-5, type=float)
 parser.add_argument('-max_grad_norm', default=1.0, type=float)
 parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
-parser.add_argument('-bert_path', default='bert-base-uncased')
+parser.add_argument('-bert_path', default='bert-base-uncased', type=str)
 parser.add_argument('-trunc_mode', default=128, type=str)
 args = parser.parse_args()
 
@@ -29,8 +31,12 @@ np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 
 
-tokenizer = BertTokenizer.from_pretrained(args.bert_path)
-model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
+if args.bert_path == "bert-base-uncased":
+    tokenizer = BertTokenizer.from_pretrained(args.bert_path)
+    model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
+elif args.bert_path == "roberta-base":
+    tokenizer = RobertaTokenizer.from_pretrained(args.bert_path)
+    model = RobertaForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
 model = torch.nn.DataParallel(model)
 model.to(device);
 
