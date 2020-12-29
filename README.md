@@ -235,6 +235,36 @@ python bert_data_preprocessing.py
   - last test: 94.03% (0.11%)
 - **Conclusion: Data preprocessing has little influence on the performance of bert.**
 
+### extra experiment: average the outputs of different models
+
+- baseline, single model, 5 runs: mean 94.53%, max 94.676%
+  - soft vote
+    - 1 models: 94.292%
+    - 2 models: 94.496%
+    - 3 models: 94.504%
+    - 4 models: 94.652%
+    - 5 models: 94.656%
+  - hard vote
+    - 1 models: 94.292%
+    - 2 models: 94.392%
+    - 3 models: 94.504%
+    - 4 models: 94.568%
+    - 5 models: 94.676%
+- head+tail, max_seq_length=512, single model, 5 runs: mean 94.27%, max 94.392%
+  - soft vote
+    - 1 models: 94.676%
+    - 2 models: 94.752%
+    - 3 models: 94.888%
+    - 4 models: 94.916%
+    - 5 models: 94.94%
+  - hard vote
+    - 1 models: 94.676%
+    - 2 models: 94.64%
+    - 3 models: 94.896%
+    - 4 models: 94.852%
+    - 5 models: 94.944%
+- **Conclusion: Averaging the outputs of different models can improve the results.**
+
 ### extra experiment: other pretrained models
 
 ```
