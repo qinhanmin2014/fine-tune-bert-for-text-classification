@@ -153,6 +153,30 @@ python bert_5_3_4.py -learning_rate_decay XXX -learning_rate XXX
     - last test: 94.46% (0.02%)
 - **Conclusion: A small decay factor (e.g., 0.95) usually leads to better results.**
 
+
+### 5.5 Multi-task Fine-Tuning
+
+```
+python bert_5_5.py 
+```
+
+- yelp p dataset: https://drive.google.com/drive/u/0/folders/0Bz8a_Dbh9Qhbfll6bVpmNUtUcFdjYmF2SEpmZUZUcVNiMUw1TWN6RDV3a0JHT3kxLVhVR2M
+- baseline
+  - train using imdb training set (average over 3 seeds)
+    - best test: 94.20% (0.08%)
+    - last test: 94.19% (0.08%)
+  - train using imdb training set + yelp p test set (average over 3 runs)
+    - best test: 94.46% (0.03%)
+    - last test: 94.43% (0.07%)
+- head+tail, max_seq_length=512
+  - train using imdb training set (average over 3 seeds)
+    - best test: 94.57% (0.07%)
+    - last test: 94.49% (0.04%)
+  - train using imdb training set + yelp p test set (average over 3 runs)
+    - best test: 94.71% (0.07%)
+    - last test: 94.67% (0.07%)
+- **Conclusion: Multi-task fine tuning can leads to better results.**
+
 ### extra experiment: influence of max lengths (imdb dataset)
 
 ```

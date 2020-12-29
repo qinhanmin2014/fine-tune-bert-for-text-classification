@@ -95,20 +95,20 @@ except Exception:
     with open(cached_features_file, "wb") as writer:
         pickle.dump((imdb_test_input_ids, imdb_test_attention_mask, imdb_test_token_type_ids, imdb_y_test), writer)
 try:
-    cached_features_file = os.path.join("cache", "yelp_train_" + str(args.max_seq_length) + "_" + str(args.trunc_mode))
-    with open(cached_features_file, "rb") as reader:
-        yelp_train_input_ids, yelp_train_attention_mask, yelp_train_token_type_ids, yelp_y_train = pickle.load(reader)
+    # cached_features_file = os.path.join("cache", "yelp_train_" + str(args.max_seq_length) + "_" + str(args.trunc_mode))
+    # with open(cached_features_file, "rb") as reader:
+    #     yelp_train_input_ids, yelp_train_attention_mask, yelp_train_token_type_ids, yelp_y_train = pickle.load(reader)
     cached_features_file = os.path.join("cache", "yelp_test_" + str(args.max_seq_length) + "_" + str(args.trunc_mode))
     with open(cached_features_file, "rb") as reader:
         yelp_test_input_ids, yelp_test_attention_mask, yelp_test_token_type_ids, yelp_y_test = pickle.load(reader)
 except Exception:
-    yelp_train_input_ids, yelp_train_attention_mask, yelp_train_token_type_ids, yelp_y_train = load_data(
-        os.path.join("data/yelp_review_polarity_csv", 'train.csv'), "yelp")
+    # yelp_train_input_ids, yelp_train_attention_mask, yelp_train_token_type_ids, yelp_y_train = load_data(
+    #     os.path.join("data/yelp_review_polarity_csv", 'train.csv'), "yelp")
     yelp_test_input_ids, yelp_test_attention_mask, yelp_test_token_type_ids, yelp_y_test = load_data(
         os.path.join("data/yelp_review_polarity_csv", 'test.csv'), "yelp")
-    cached_features_file = os.path.join("cache", "yelp_train_" + str(args.max_seq_length) + "_" + str(args.trunc_mode))
-    with open(cached_features_file, "wb") as writer:
-        pickle.dump((yelp_train_input_ids, yelp_train_attention_mask, yelp_train_token_type_ids, yelp_y_train), writer)
+    # cached_features_file = os.path.join("cache", "yelp_train_" + str(args.max_seq_length) + "_" + str(args.trunc_mode))
+    # with open(cached_features_file, "wb") as writer:
+    #     pickle.dump((yelp_train_input_ids, yelp_train_attention_mask, yelp_train_token_type_ids, yelp_y_train), writer)
     cached_features_file = os.path.join("cache", "yelp_test_" + str(args.max_seq_length) + "_" + str(args.trunc_mode))
     with open(cached_features_file, "wb") as writer:
         pickle.dump((yelp_test_input_ids, yelp_test_attention_mask, yelp_test_token_type_ids, yelp_y_test), writer)
