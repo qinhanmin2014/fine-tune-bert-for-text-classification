@@ -6,7 +6,10 @@ import random
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import TensorDataset, DataLoader
-from transformers import BertTokenizer, BertPreTrainedModel, BertModel, AdamW, get_linear_schedule_with_warmup
+from transformers import BertTokenizer, BertPreTrainedModel, BertModel
+from transformers import RobertaTokenizer, RobertaModel
+from transformers.models.roberta.modeling_roberta import RobertaPreTrainedModel
+from transformers import AdamW, get_linear_schedule_with_warmup
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -19,7 +22,7 @@ parser.add_argument('-learning_rate', default=2e-5, type=float)
 parser.add_argument('-max_grad_norm', default=1.0, type=float)
 parser.add_argument('-warm_up_proportion', default=0.1, type=float)
 parser.add_argument('-gradient_accumulation_step', default=1, type=int)
-parser.add_argument('-bert_path', default='bert-base-uncased')
+parser.add_argument('-bert_path', default='bert-base-uncased', type=str)
 parser.add_argument('-trunc_mode', default=128, type=str)
 parser.add_argument('-num_pool_layers', default=1, type=int)
 parser.add_argument('-pool_mode', default="mean", type=str)
@@ -29,6 +32,7 @@ args = parser.parse_args()
 random.seed(args.seed)
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
+
 
 class BertForSequenceClassification(BertPreTrainedModel):
     def __init__(self, config):
@@ -79,7 +83,76 @@ class BertForSequenceClassification(BertPreTrainedModel):
         return logits
 
 
-model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
+class RobertaClassificationHead(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.hidden_size * args.num_pool_layers, config.hidden_size)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        self.out_proj = nn.Linear(config.hidden_size, config.num_labels)
+
+    def forward(self, features, **kwargs):
+        if args.pool_mode == "mean":
+            x = torch.mean(features, dim=1)
+        elif args.pool_mode == "max":
+            x, _ = torch.max(features, dim=1)
+        x = self.dropout(x)
+        x = self.dense(x)
+        x = torch.tanh(x)
+        x = self.dropout(x)
+        x = self.out_proj(x)
+        return x
+
+
+class RobertaForSequenceClassification(RobertaPreTrainedModel):
+    _keys_to_ignore_on_load_missing = [r"position_ids"]
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
+        self.roberta = RobertaModel(config, add_pooling_layer=False)
+        self.classifier = RobertaClassificationHead(config)
+        self.init_weights()
+
+    def forward(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        token_type_ids=None,
+        position_ids=None,
+        head_mask=None,
+        inputs_embeds=None,
+        labels=None,
+        output_attentions=None,
+        output_hidden_states=None,
+        return_dict=None,
+    ):
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        outputs = self.roberta(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            output_attentions=True,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+        sequence_output = []
+        for i in range(-args.num_pool_layers, 0):
+            sequence_output.append(outputs[2][i])
+        sequence_output = torch.cat(sequence_output, dim=2)
+        logits = self.classifier(sequence_output)
+        return logits
+
+
+if args.bert_path == "bert-base-uncased":
+    tokenizer = BertTokenizer.from_pretrained(args.bert_path)
+    model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
+elif args.bert_path == "roberta-base":
+    tokenizer = RobertaTokenizer.from_pretrained(args.bert_path)
+    model = RobertaForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
 model = torch.nn.DataParallel(model)
 model.to(device);
 
@@ -103,17 +176,22 @@ def load_data(path):
             assert args.trunc_mode < args.max_seq_length
             if len(text) > args.max_seq_length - 2:
                 text = text[:args.trunc_mode] + text[-(args.max_seq_length - 2 - args.trunc_mode):]
-        text = ["[CLS]"] + text + ["[SEP]"]
+        if args.bert_path == "bert-base-uncased":
+            text = ["[CLS]"] + text + ["[SEP]"]
+        elif args.bert_path == "roberta-base":
+            text = ["<s>"] + text + ["</s>"]
         attention_mask.append([1] * len(text) + [0] * (args.max_seq_length - len(text)))
         token_type_ids.append([0] * args.max_seq_length)
-        input_ids.append(tokenizer.convert_tokens_to_ids(text) + [0] * (args.max_seq_length - len(text)))
+        if args.bert_path == "bert-base-uncased":
+            input_ids.append(tokenizer.convert_tokens_to_ids(text) + [0] * (args.max_seq_length - len(text)))
+        elif args.bert_path == "roberta-base":
+            input_ids.append(tokenizer.convert_tokens_to_ids(text) + [1] * (args.max_seq_length - len(text)))
         sentiments.append(int(label))
         line = input_file.readline()
     input_file.close()
     return np.array(input_ids), np.array(attention_mask), np.array(token_type_ids), np.array(sentiments)
 
 
-tokenizer = BertTokenizer.from_pretrained(args.bert_path)
 train_path = os.path.join("data/imdb", 'train.csv')
 test_path = os.path.join("data/imdb", 'test.csv')
 train_input_ids, train_attention_mask, train_token_type_ids, y_train = load_data(train_path)

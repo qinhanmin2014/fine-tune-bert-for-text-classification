@@ -54,7 +54,7 @@ python bert_5_3_1.py -max_seq_length XXX -trunc_mode 128
     - last test: 93.96% (0.09%)
 - **Conclusion: head + tail is usually the best way.**
 
-### 5.3.2 Features from Different layers
+### 5.3.2 Features from Different layers (imdb dataset)
 
 ```
 python bert_5_3_2.py -pool_mode concat
@@ -83,7 +83,7 @@ python bert_5_3_2.py -pool_mode max
     - last test: 94.50% (0.07%)
 - **Conclusion: Pooling the first output state of the last several layers won't lead to better results on imdb dataset.**
 
-### 5.3.3 Catastrophic Forgetting
+### 5.3.3 Catastrophic Forgetting (imdb dataset)
 
 ```
 python bert_5_3_1.py -learning_rate XXX
@@ -105,7 +105,7 @@ python bert_5_3_1.py -learning_rate XXX
   - loss won't decrease
 - **Conclusion: A small learning rate is usually better.**
 
-### 5.3.4 Layer-wise Decreasing Layer Rate
+### 5.3.4 Layer-wise Decreasing Layer Rate (imdb dataset)
 
 ```
 python bert_5_3_4.py -learning_rate_decay XXX -learning_rate XXX
@@ -154,7 +154,7 @@ python bert_5_3_4.py -learning_rate_decay XXX -learning_rate XXX
 - **Conclusion: A small decay factor (e.g., 0.95) usually leads to better results.**
 
 
-### 5.5 Multi-task Fine-Tuning
+### 5.5 Multi-task Fine-Tuning (imdb dataset)
 
 ```
 python bert_5_5.py 
@@ -259,7 +259,7 @@ python bert_data_preprocessing.py
   - last test: 94.03% (0.11%)
 - **Conclusion: Data preprocessing has little influence on the performance of bert.**
 
-### extra experiment: average the outputs of different models
+### extra experiment: average the outputs of different models (imdb dataset)
 
 - baseline, single model, 5 runs: mean 94.53%, max 94.676%
   - soft vote
@@ -289,7 +289,7 @@ python bert_data_preprocessing.py
     - 5 models: 94.944%
 - **Conclusion: Averaging the outputs of different models can improve the results.**
 
-### extra experiment: other pretrained models
+### extra experiment: other pretrained models (imdb dataset)
 
 ```
 python bert_other_models.py -bert_path roberta-base
@@ -311,7 +311,7 @@ python bert_other_models.py -bert_path roberta-base
     - last test: 95.66% (0.05%)
 - **Conclusion: We can often replace bert with roberta to get better results.**
 
-### extra experiment: tensorflow instead of pytorch
+### extra experiment: tensorflow instead of pytorch (imdb dataset)
 
 ```
 tf_bert_5_3_1_kaggle_tpu.ipynb (use tpu provided by kaggle)

@@ -29,7 +29,7 @@ np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 
 
-tokenizer = BertTokenizer.from_pretrained(args.bert_path)
+tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
 model = torch.nn.DataParallel(model)
 model.to(device);
