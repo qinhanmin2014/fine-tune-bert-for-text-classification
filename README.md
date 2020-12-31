@@ -153,6 +153,31 @@ python bert_5_3_4.py -learning_rate_decay XXX -learning_rate XXX
     - last test: 94.46% (0.02%)
 - **Conclusion: A small decay factor (e.g., 0.95) usually leads to better results.**
 
+### 5.4 Investigating the Further Pretraining (imdb dataset)
+
+```
+python bert_5_4_create_pretraining_data.py
+python bert_5_4_run_pretraining.py
+python bert_5_3_1.py -seed 0 -bert_path imdb_further_pretraining_epoch_X/
+```
+
+- baseline (learning rate 2.0e-5, head+tail, max_seq_length=512)
+  - reported result (best test): 94.58% (error rate 5.42%)
+  - reproduced result (average over 3 seeds)
+    - best test: 94.51% (0.08%)
+    - last test: 94.45% (0.06%)
+- fine tuning using training set
+  - reported result (best test): 95.63% (error rate 4.37%)
+  - reproduced result (epoch 3 model, average over 3 seeds)
+    - best test: 95.19% (0.03%)
+    - last test: 95.10% (0.08%)
+  - reproduced result (epoch 2 model, average over 3 seeds)
+    - best test: 95.19% (0.07%)
+    - last test: 95.07% (0.07%)
+  - reproduced result (epoch 1 model, average over 3 seeds)
+    - best test: 95.00% (0.08%)
+    - last test: 94.98% (0.10%)
+- **Conclusion: Further Pretraining usually leads to better results.**
 
 ### 5.5 Multi-task Fine-Tuning (imdb dataset)
 

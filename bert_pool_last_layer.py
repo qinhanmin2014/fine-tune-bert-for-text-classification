@@ -135,13 +135,13 @@ class RobertaForSequenceClassification(RobertaPreTrainedModel):
             position_ids=position_ids,
             head_mask=head_mask,
             inputs_embeds=inputs_embeds,
-            output_attentions=True,
-            output_hidden_states=output_hidden_states,
+            output_attentions=output_attentions,
+            output_hidden_states=True,
             return_dict=return_dict,
         )
         sequence_output = []
         for i in range(-args.num_pool_layers, 0):
-            sequence_output.append(outputs[2][i])
+            sequence_output.append(outputs.hidden_states[i])
         sequence_output = torch.cat(sequence_output, dim=2)
         logits = self.classifier(sequence_output)
         return logits
@@ -231,7 +231,10 @@ for epoch in range(args.num_epochs):
         cur_attention_mask = cur_attention_mask.to(device)
         cur_token_type_ids = cur_token_type_ids.to(device)
         cur_y = cur_y.to(device)
-        outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
+        if args.bert_path == "bert-base-uncased":
+            outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
+        elif args.bert_path == "roberta-base":
+            outputs = model(cur_input_ids, cur_attention_mask)
         loss = nn.CrossEntropyLoss()(outputs, cur_y)
         loss /= args.gradient_accumulation_step
         loss.backward()
