@@ -94,7 +94,7 @@ python bert_5_3_1.py -learning_rate XXX
   - last test: 94.49% (0.04%)
 - head+tail, max_seq_length=512, learning_rate 5.0e-5 (average over 3 seeds)
   - best test: 94.30% (0.12%)
-  - last test: 94.27% (0.13%) 
+  - last test: 94.27% (0.13%)
 - head+tail, max_seq_length=512, learning_rate 1.0e-4 (average over 3 seeds)
   - best test: 91.95% (0.32%)
   - last test: 91.95% (0.32%)
@@ -182,7 +182,7 @@ python bert_5_3_1.py -seed 0 -bert_path imdb_further_pretraining_epoch_X/
 ### 5.5 Multi-task Fine-Tuning (imdb dataset)
 
 ```
-python bert_5_5.py 
+python bert_5_5.py
 ```
 
 - yelp p dataset: https://drive.google.com/drive/u/0/folders/0Bz8a_Dbh9Qhbfll6bVpmNUtUcFdjYmF2SEpmZUZUcVNiMUw1TWN6RDV3a0JHT3kxLVhVR2M
@@ -231,24 +231,43 @@ python bert_baseline.py -max_seq_length XXX
 ```
 python bert_pool_last_layer.py -pool_mode mean -num_pool_layers XXX
 python bert_pool_last_layer.py -pool_mode max -num_pool_layers XXX
+python bert_pool_last_layer.py -pool_mode mean -num_pool_layers XXX -bert_path roberta-base
+python bert_pool_last_layer.py -pool_mode max -num_pool_layers XXX -bert_path roberta-base
 ```
 
-- baseline (head+tail, max_seq_length=512, average over 3 seeds)
-  - best test: 94.57% (0.07%)
-  - last test: 94.49% (0.04%)
-- average pooling, last layer
-  - best test: 94.47% (0.11%)
-  - last test: 94.44% (0.14%)
-- average pooling, concat last 3 layers
-  - best test: 94.48% (0.06%)
-  - last test: 94.47% (0.07%)
-- max pooling, last layer
-  - best test: 94.43% (0.12%)
-  - last test: 94.41% (0.10%)
-- max pooling, concat last 3 layers
-  - best test: 94.45% (0.08%)
-  - last test: 94.41% (0.13%)
-- **Conclusion: Pooling the output states won't lead to better results on imdb dataset.**
+- bert
+  - baseline (head+tail, max_seq_length=512, average over 3 seeds)
+    - best test: 94.57% (0.07%)
+    - last test: 94.49% (0.04%)
+  - average pooling, last layer
+    - best test: 94.47% (0.11%)
+    - last test: 94.44% (0.14%)
+  - average pooling, concat last 3 layers
+    - best test: 94.48% (0.06%)
+    - last test: 94.47% (0.07%)
+  - max pooling, last layer
+    - best test: 94.43% (0.12%)
+    - last test: 94.41% (0.10%)
+  - max pooling, concat last 3 layers
+    - best test: 94.45% (0.08%)
+    - last test: 94.41% (0.13%)
+- roberta
+  - baseline (head+tail, max_seq_length=512, average over 3 seeds)
+    - best test: 95.66% (0.05%)
+    - last test: 95.66% (0.05%)
+  - average pooling, last layer
+    - best test: 95.81% (0.04%)
+    - last test: 95.81% (0.04%)
+  - average pooling, concat last 3 layers
+    - best test: 95.57% (0.13%)
+    - last test: 95.56% (0.11%)
+  - max pooling, last layer
+    - best test: 95.68% (0.03%)
+    - last test: 95.65% (0.02%)
+  - max pooling, concat last 3 layers
+    - best test: 95.71% (0.07%)
+    - last test: 95.67% (0.05%)
+- **Conclusion: Pooling the output states can lead to better results if we use roberta.**
 
 ### extra experiment: influence of gradient accumulation (imdb dataset)
 
@@ -318,7 +337,7 @@ python bert_data_preprocessing.py
 
 ```
 python bert_other_models.py -bert_path roberta-base
-``` 
+```
 
 - baseline
   - bert result (average over 3 seeds)
