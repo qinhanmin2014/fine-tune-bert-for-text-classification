@@ -355,24 +355,34 @@ python bert_other_models.py -bert_path roberta-base
     - last test: 95.66% (0.05%)
 - **Conclusion: We can often replace bert with roberta to get better results.**
 
-### extra experiment: tensorflow instead of pytorch (imdb dataset)
+### extra experiment: tpu instead of gpu (imdb dataset)
 
 ```
-tf_bert_5_3_1_kaggle_tpu.ipynb (use tpu provided by kaggle)
+tf_bert_5_3_1_kaggle_tpu.ipynb (use tensorflow & tpu provided by kaggle)
+pytorch_bert_5_3_1_kaggle_tpu.ipynb (use pytorch & tpu provided by kaggle)
+tf_bert_5_3_1_colab_tpu.ipynb (use tensorflow & tpu provided by colab)
+pytorch_bert_5_3_1_colab_tpu.ipynb (use pytorch & tpu provided by colab)
 ```
 
+- kaggle tpu is better than colab tpu (e.g., can support larger batch_size) so the results below are from kaggle tpu
 - baseline
   - pytorch result (average over 3 seeds)
     - best test: 94.20% (0.08%)
     - last test: 94.19% (0.08%)
-  - tensorflow result (average over 3 runs)
+  - tensorflow tpu result (average over 3 runs)
     - best test: 94.24% (0.08%)
     - last test: 94.17% (0.10%)
+   - pytorch tpu result (average over 3 seeds)
+    - best test: 94.10% (0.05%)
+    - last test: 94.10% (0.05%)
 - head+tail, max_seq_length=512
   - pytorch result (average over 3 seeds)
     - best test: 94.57% (0.07%)
     - last test: 94.49% (0.04%)
-  - tensorflow result (average over 3 runs)
+  - tensorflow tpu result (average over 3 runs)
     - best test: 94.51% (0.06%)
     - last test: 94.44% (0.13%)
-- **Conclusion: We can get similar results using tensorflow.**
+   - pytorch tpu result (average over 3 seeds)
+    - best test: 94.54% (0.08%)
+    - last test: 94.53% (0.09%)
+- **Conclusion: We can get similar results using tpu.**
