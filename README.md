@@ -355,6 +355,28 @@ python bert_other_models.py -bert_path roberta-base
     - last test: 95.66% (0.05%)
 - **Conclusion: We can often replace bert with roberta to get better results.**
 
+### extra experiment: tensorflow instead of pytorch (imdb dataset)
+
+```
+python tf_bert_5_3_1.py
+```
+
+- baseline
+  - pytorch result (average over 3 seeds)
+    - best test: 94.20% (0.08%)
+    - last test: 94.19% (0.08%)
+  - tensorflow result (average over 3 runs)
+    - best test: 94.16% (0.03%)
+    - last test: 94.16% (0.03%)
+- head+tail, max_seq_length=512
+  - pytorch result (average over 3 seeds)
+    - best test: 94.57% (0.07%)
+    - last test: 94.49% (0.04%)
+  - tensorflow result (average over 3 runs)
+    - best test: 94.53% (0.02%)
+    - last test: 94.52% (0.00%)
+- **Conclusion: We can get similar results using tensorflow.**
+
 ### extra experiment: tpu instead of gpu (imdb dataset)
 
 ```
