@@ -31,10 +31,10 @@ np.random.seed(args.seed)
 torch.manual_seed(args.seed)
 
 
-if args.bert_path == "bert-base-uncased":
+if args.bert_path == "bert-base-uncased" or args.bert_path == "bert-large-uncased":
     tokenizer = BertTokenizer.from_pretrained(args.bert_path)
     model = BertForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
-elif args.bert_path == "roberta-base":
+elif args.bert_path == "roberta-base" or args.bert_path == "roberta-large":
     tokenizer = RobertaTokenizer.from_pretrained(args.bert_path)
     model = RobertaForSequenceClassification.from_pretrained(args.bert_path, num_labels=2)
 model = torch.nn.DataParallel(model)

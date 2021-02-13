@@ -337,6 +337,7 @@ python bert_data_preprocessing.py
 
 ```
 python bert_other_models.py -bert_path roberta-base
+CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -batch_size 8 -gradient_accumulation_step 3 -bert_path bert-large-uncased
 ```
 
 - baseline
@@ -350,6 +351,9 @@ python bert_other_models.py -bert_path roberta-base
   - bert result (average over 3 seeds)
     - best test: 94.57% (0.07%)
     - last test: 94.49% (0.04%)
+  - bert-large-uncased result (average over 3 seeds)
+    - best test: 95.28% (0.03%)
+    - last test: 95.32% (0.02%)
   - roberta result (average over 3 runs)
     - best test: 95.66% (0.05%)
     - last test: 95.66% (0.05%)
@@ -394,7 +398,7 @@ pytorch_bert_5_3_1_colab_tpu.ipynb (use pytorch & tpu provided by colab)
   - tensorflow tpu result (average over 3 runs)
     - best test: 94.24% (0.08%)
     - last test: 94.17% (0.10%)
-   - pytorch tpu result (average over 3 seeds)
+  - pytorch tpu result (average over 3 seeds)
     - best test: 94.10% (0.05%)
     - last test: 94.10% (0.05%)
 - head+tail, max_seq_length=512
@@ -404,7 +408,7 @@ pytorch_bert_5_3_1_colab_tpu.ipynb (use pytorch & tpu provided by colab)
   - tensorflow tpu result (average over 3 runs)
     - best test: 94.51% (0.06%)
     - last test: 94.44% (0.13%)
-   - pytorch tpu result (average over 3 seeds)
+  - pytorch tpu result (average over 3 seeds)
     - best test: 94.54% (0.08%)
     - last test: 94.53% (0.09%)
 - **Conclusion: We can get similar results using tpu.**
