@@ -60,15 +60,15 @@ def load_data(path):
             assert args.trunc_mode < args.max_seq_length
             if len(text) > args.max_seq_length - 2:
                 text = text[:args.trunc_mode] + text[-(args.max_seq_length - 2 - args.trunc_mode):]
-        if args.bert_path == "bert-base-uncased":
+        if args.bert_path == "bert-base-uncased" or args.bert_path == "bert-large-uncased":
             text = ["[CLS]"] + text + ["[SEP]"]
-        elif args.bert_path == "roberta-base":
+        elif args.bert_path == "roberta-base" or args.bert_path == "roberta-large":
             text = ["<s>"] + text + ["</s>"]
         attention_mask.append([1] * len(text) + [0] * (args.max_seq_length - len(text)))
         token_type_ids.append([0] * args.max_seq_length)
-        if args.bert_path == "bert-base-uncased":
+        if args.bert_path == "bert-base-uncased" or args.bert_path == "bert-large-uncased":
             input_ids.append(tokenizer.convert_tokens_to_ids(text) + [0] * (args.max_seq_length - len(text)))
-        elif args.bert_path == "roberta-base":
+        elif args.bert_path == "roberta-base" or args.bert_path == "roberta-large":
             input_ids.append(tokenizer.convert_tokens_to_ids(text) + [1] * (args.max_seq_length - len(text)))
         sentiments.append(int(label))
         line = input_file.readline()
@@ -115,9 +115,9 @@ for epoch in range(args.num_epochs):
         cur_attention_mask = cur_attention_mask.to(device)
         cur_token_type_ids = cur_token_type_ids.to(device)
         cur_y = cur_y.to(device)
-        if args.bert_path == "bert-base-uncased":
+        if args.bert_path == "bert-base-uncased" or args.bert_path == "bert-large-uncased":
             outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
-        elif args.bert_path == "roberta-base":
+        elif args.bert_path == "roberta-base" or args.bert_path == "roberta-large":
             outputs = model(cur_input_ids, cur_attention_mask)
         loss = nn.CrossEntropyLoss()(outputs[0], cur_y)
         loss /= args.gradient_accumulation_step
@@ -139,9 +139,9 @@ for epoch in range(args.num_epochs):
             cur_attention_mask = cur_attention_mask.to(device)
             cur_token_type_ids = cur_token_type_ids.to(device)
             cur_y = cur_y.to(device)
-            if args.bert_path == "bert-base-uncased":
+            if args.bert_path == "bert-base-uncased" or args.bert_path == "bert-large-uncased":
                 outputs = model(cur_input_ids, cur_attention_mask, cur_token_type_ids)
-            elif args.bert_path == "roberta-base":
+            elif args.bert_path == "roberta-base" or args.bert_path == "roberta-large":
                 outputs = model(cur_input_ids, cur_attention_mask)
             _, predicted = torch.max(outputs[0], 1)
             total += cur_y.size(0)

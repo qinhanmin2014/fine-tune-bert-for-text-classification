@@ -338,6 +338,7 @@ python bert_data_preprocessing.py
 ```
 python bert_other_models.py -bert_path roberta-base
 CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -batch_size 8 -gradient_accumulation_step 3 -bert_path bert-large-uncased
+CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_other_models.py -batch_size 8 -gradient_accumulation_step 3 -bert_path roberta-large
 ```
 
 - baseline
@@ -357,6 +358,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 python bert_5_3_1.py -batch_size 8 -gradient_accumu
   - roberta result (average over 3 runs)
     - best test: 95.66% (0.05%)
     - last test: 95.66% (0.05%)
+  - roberta-large result (average over 3 seeds)
+    - best test: 96.39% (0.06%)
+    - last test: 96.32% (0.10%)
 - **Conclusion: We can often replace bert with roberta to get better results.**
 
 ### extra experiment: tensorflow instead of pytorch (imdb dataset)
